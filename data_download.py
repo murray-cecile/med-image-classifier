@@ -22,7 +22,7 @@ PATH = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/Test_Imag
 def open_img(single_file_path):
     '''
     '''
-    ds = pydicom.dcmread(file)
+    ds = pydicom.dcmread(single_file_path)
 
     return ds
 
@@ -30,7 +30,7 @@ def open_img(single_file_path):
 def plt_img(pydicom_img):
     '''
     '''
-    plt.imhow(pydicom_img)
+    plt.imshow(pydicom_img)
 
 
 # Run this while in your folder of files

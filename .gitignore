@@ -1,0 +1,16 @@
+*.tcia
+*.csv
+*.dcm
+
+__pycache__/
+.pytest_cache
+code/.pytest_cache
+*.py[cod]
+*.pyc
+*/.ipynb_checkpoints/*
+
+
+# Distribution / packaging
+venv/
+
+
