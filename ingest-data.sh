@@ -11,4 +11,6 @@ FILEDIR=$1
 find $FILEDIR -type f -exec sh -c 'for f do x=${f#./}; y="${x// /_}"; eval "mv ${x// /\ } ${y////-}"; done' {} +
 
 # Step 4: remove filepath portion of directory name from all files using the following Linux command:
-rename -- "s/(${FILEDIR////-}--)//" *
+cd $FILEDIR
+rename -- "s/-.+-med-image-classifier-raw-CBIS-DDSM-//" *
+cd ..

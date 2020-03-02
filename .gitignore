@@ -1,16 +1,5 @@
-*.tcia
-*.csv
 *.dcm
+*.csv
 
-__pycache__/
-.pytest_cache
-code/.pytest_cache
-*.py[cod]
-*.pyc
-*/.ipynb_checkpoints/*
-
-
-# Distribution / packaging
+__pycache__
 venv/
-
-

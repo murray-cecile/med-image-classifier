@@ -1,7 +1,6 @@
 #==============================================================================#
 # TEST IMAGE MANIPULATION
 #
-# Cecile Murray
 #==============================================================================#
 
 import numpy as np
@@ -10,12 +9,17 @@ import matplotlib.pyplot as plt
 
 from skimage import exposure
 from skimage.filters import gaussian
+from skimage.filters import try_all_threshold
 from skimage.segmentation import active_contour
+
 
 import data_download as dd
 
-TEST_FILE = "raw/CBIS-DDSM-Calc-Test_P_00331_LEFT_CC_1-08-29-2017-DDSM-53305-1-ROI_mask_images-07190-000000.dcm"
-TEST_MASK = "raw/CBIS-DDSM-Calc-Test_P_00331_LEFT_CC_1-08-29-2017-DDSM-53305-1-ROI_mask_images-07190-000001.dcm"
+
+TEST_FILE = "raw/Mass-Training_P_00004_RIGHT_MLO_1-07-21-2016-DDSM-83774-1-ROI_mask_images-84846-000000.dcm"
+TEST_MASK = "raw/Mass-Training_P_00004_RIGHT_MLO_1-07-21-2016-DDSM-83774-1-ROI_mask_images-84846-000001.dcm"
+TEST_FULL = "raw/Mass-Training_P_00004_RIGHT_MLO-07-20-2016-DDSM-24486-1-full_mammogram_images-89890-000000.dcm"
+
 
 def get_dicom_pixel_array(file):
     '''
@@ -28,29 +32,39 @@ def get_dicom_pixel_array(file):
 
 
 
-
 if __name__ == "__main__":
     
     ds = dd.open_img(TEST_FILE)   
     a8 = get_dicom_pixel_array(TEST_FILE)
+    plt.imshow(a8)
+    plt.show()
 
-    ds2 = dd.open_img(TEST_MASK)
-    m8 = get_dicom_pixel_array(TEST_MASK)
+    m = dd.open_img(TEST_MASK)
+    full = dd.open_img(TEST_FULL)
+
+    plt.imshow(m.pixel_array)
+    plt.show()
+    plt.imshow(full.pixel_array)
+    plt.show()
         
     # this performs terribly
     # b = cv2.adaptiveThreshold(a8, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
     # plt.imshow(b)
 
-    # try more binary
-    ret, b = cv2.threshold(a8, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    plt.imshow(b)
-    plt.show()    
+    # try different histogram equalization methods (skimage)
+    a8_eq = exposure.equalize_hist(a8)
 
-    # also don't get anything out of this
-    # c = cv2.Canny(a8, 125, 255)
-    
-    # # try histogram equalization (skimage)
-    # a8_eq = exposure.equalize_hist(a8)
+    p90, p100 = np.percentile(a8, (90, 100))
+    a8_ct = exposure.rescale_intensity(a8, in_range=(p90, p100))
+
+
+    # fig, ax = try_all_threshold(a8_ct, figsize=(10, 8), verbose=False)
+    # plt.show()
+
+    # try more binary
+    # ret, b = cv2.threshold(a8_eq, 230, 255, cv2.THRESH_BINARY)
+    # plt.imshow(b)
+    # plt.show()    
 
     # # active contour from skimage
     # s = np.linspace(0, 2*np.pi, 400)
