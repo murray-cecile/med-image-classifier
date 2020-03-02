@@ -11,6 +11,7 @@ from skimage import exposure
 from skimage.filters import gaussian
 from skimage.filters import try_all_threshold
 from skimage.segmentation import active_contour
+from skimage.segmentation import chan_vese
 
 
 import data_download as dd
@@ -52,19 +53,13 @@ if __name__ == "__main__":
     # plt.imshow(b)
 
     # try different histogram equalization methods (skimage)
-    a8_eq = exposure.equalize_hist(a8)
+    # a8_eq = exposure.equalize_hist(a8)
+    # p90, p100 = np.percentile(a8, (90, 100))
+    # a8_ct = exposure.rescale_intensity(a8, in_range=(p90, p100))
 
-    p90, p100 = np.percentile(a8, (90, 100))
-    a8_ct = exposure.rescale_intensity(a8, in_range=(p90, p100))
-
-
+    # try many thresholding techniques
     # fig, ax = try_all_threshold(a8_ct, figsize=(10, 8), verbose=False)
     # plt.show()
-
-    # try more binary
-    # ret, b = cv2.threshold(a8_eq, 230, 255, cv2.THRESH_BINARY)
-    # plt.imshow(b)
-    # plt.show()    
 
     # # active contour from skimage
     # s = np.linspace(0, 2*np.pi, 400)
@@ -81,3 +76,20 @@ if __name__ == "__main__":
     # ax.set_xticks([]), ax.set_yticks([])
     # ax.axis([0, a8.shape[1], a8.shape[0], 0])
     # plt.show()
+
+    # Feel free to play around with the parameters to see how they impact the result
+    cv = chan_vese(a8.astype(float), mu=0.3, lambda1=1, lambda2=1, tol=1e-3, max_iter=200,
+                dt=0.5, init_level_set="checkerboard", extended_output=True)
+
+    fig, axes = plt.subplots(1, 2, figsize=(8, 8))
+    ax = axes.flatten()
+
+    ax[0].imshow(a8, cmap="gray")
+    ax[0].set_axis_off()
+    ax[0].set_title("Original Image", fontsize=12)
+
+    ax[1].imshow(cv[0], cmap="gray")
+    ax[1].set_axis_off()
+    title = "Chan-Vese segmentation - {} iterations".format(len(cv[2]))
+    ax[1].set_title(title, fontsize=12)
+    plt.show()
