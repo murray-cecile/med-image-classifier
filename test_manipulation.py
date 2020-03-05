@@ -78,13 +78,13 @@ if __name__ == "__main__":
     # plt.show()
 
     # Feel free to play around with the parameters to see how they impact the result
-    cv = chan_vese(a8.astype(float), mu=0.3, lambda1=1, lambda2=1, tol=1e-3, max_iter=200,
+    cv = chan_vese(img_scaled.astype(float), mu=0.3, lambda1=1, lambda2=1, tol=1e-3, max_iter=200,
                 dt=0.5, init_level_set="checkerboard", extended_output=True)
 
     fig, axes = plt.subplots(1, 2, figsize=(8, 8))
     ax = axes.flatten()
 
-    ax[0].imshow(a8, cmap="gray")
+    ax[0].imshow(img_scaled, cmap="gray")
     ax[0].set_axis_off()
     ax[0].set_title("Original Image", fontsize=12)
 
