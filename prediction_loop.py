@@ -19,8 +19,12 @@ from sklearn.exceptions import ConvergenceWarning
 
 import pipeline as pipe
 
+PATH = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-image-classifier/raw_train/'
+TRAIN_CSV = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-image-classifier/metadata/training_labels.csv'
+
 
 @ignore_warnings(category=ConvergenceWarning)
+@ignore_warnings(category=FutureWarning)
 def find_best_model(models, parameters_grid, x_train, outcome_label):
     '''
     Cross-validation to find the best model, given parameters
@@ -85,7 +89,7 @@ def find_best_model(models, parameters_grid, x_train, outcome_label):
     return best_model
 
 
-# THIS IS NOT READY
+#### THIS IS NOT READY ####
 def main():
     '''
     EXECUTE FULL LOOP.
