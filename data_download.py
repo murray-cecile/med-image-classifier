@@ -1,12 +1,15 @@
 '''
-Initial data download menus
+Tammy's Steps:
 
-Step 1: Add desired images to the cart and download (I bulk selected the first 100)
-Step 2: use NBIA data retriever to convert images from .tcia to .dcm (longest step)
-Step 3: Flatten downloaded folders using the following linux command:
-$ find /Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/Test_Images/First_100/ -type f -exec sh -c 'for f do x=${f#./}; y="${x// /_}"; eval "mv ${x// /\ } ${y////-}"; done' {} +
-Step 4: remove /Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/Test_Images/First_100/ portion of directory name from all files using the following Linux command:
-$ rename -- 's/-Users-Tammy-Documents-_MSCAPP-Winter_2020-Computer_Vision_MP-Test_Images-First_100--//' *
+Step 1: Data available here: https://wiki.cancerimagingarchive.net/display/Public/CBIS-DDSM#5e40bd1f79d64f04b40cac57ceca9272
+Step 2: Download 'Mass-Training ROI and Cropped Images'. Move these to the raw folder in med-image-classifier.
+Step 3: Use NBIA data retriever to convert images from .tcia to .dcm (can pause at any time)
+Step 4: Flatten downloaded folders using the following linux command:
+        bash ingest-data.sh /Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-image-classifier/raw/
+Step 5: Remove the filepath portion of directory name from all files using the following Linux command:
+        rename -- 's/-Users-Tammy-Documents-_MSCAPP-Winter_2020-Computer_Vision_MP-med-image-classifier-raw--CBIS-DDSM-//' *
+Step 6: Delete the masks using the following Linux command, leaving only the ROIs:
+        find . -name '*-000001.dcm' -delete
 '''
 
 import numpy as np
@@ -14,8 +17,8 @@ import png, os, pydicom
 import matplotlib.pyplot as plt
 import rasterio
 
-PATH = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/Test_Images/First_100'
-
+PATH = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-image-classifier/raw_train'
+FILE = r'Mass-Training_P_00059_LEFT_CC_1-07-20-2016-DDSM-17695-1-cropped_images-02767-000000.dcm'
 
 # Run this in directory of interest
 # Goal: create a json containing each file as well as characteristics
@@ -32,7 +35,8 @@ def plt_img(pydicom_img):
     '''
     plt.imshow(pydicom_img)
 
-
+'''
+# Not necessary
 # Run this while in your folder of files
 def convert_dicom_png(path=PATH):
     '''
@@ -59,3 +63,4 @@ def convert_dicom_png(path=PATH):
                 w.write(png_file, image_2d_scaled)
         except:
             print('Could not convert: ', file)
+'''

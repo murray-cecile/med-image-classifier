@@ -27,9 +27,10 @@ def threshold_img(img, pctile):
     Returns: thresholded binary image pixel array
     '''
 
-    # rescaling
+    # rescaling --> consider exposure.equalize_hist
     p_thresh, p100 = np.percentile(img, (pctile, 100))
     img_scaled = exposure.rescale_intensity(img, in_range=(p_thresh, p100))
+
 
     # thresholding
     img_thresh = threshold_otsu(img_scaled)
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
             ax[0].imshow(a)
 
-            b = threshold_img(a, 90)
+            b = threshold_img(a, 90) #Why 90?
             ax[1].imshow(b)
             
             plt.show()
