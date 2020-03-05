@@ -44,6 +44,9 @@ def find_best_model(models, parameters_grid, x_train, outcome_label):
             # Calculate MSE using 5-fold cross validation
             # Change signs because scoring is negative MSE
             x_train_no_id = x_train.drop('id', axis=1)
+            print(x_train_no_id.head())
+            print(x_train_no_id.drop(outcome_label, axis=1).head())
+            print(x_train[outcome_label].head())
             scores = cross_val_score(estimator=model,
                                      X=x_train_no_id.drop(outcome_label, axis=1),
                                      y=x_train[outcome_label], # series or dataframe preferred?
@@ -112,4 +115,34 @@ def main():
     results.to_csv('results.csv', index=False)
 
 if __name__ == '__main__':
-    main()
+    # main()
+
+    models = {'Tree': DecisionTreeRegressor(max_depth=10),
+              'Lasso': Lasso(alpha=0.1),
+              'Ridge': Ridge(alpha=.5),
+              'Forest': RandomForestRegressor(max_depth=2)
+              }
+
+    parameters_grid = {'Tree': {'max_depth': [10, 20]},
+                       'Lasso': {'alpha': [0.01, 0.1]},
+                       'Ridge': {'alpha': [0.01, 0.1]},
+                       'Forest': {'max_depth': [10, 20, 50]}
+                       }
+
+    outcome = 'pathology'
+
+    # full_data = pipe.properties(path = "raw/", train_csv="metadata/mass_case_description_train_set.csv")
+
+    # train_data = full_data.drop(columns = ['patient_id', 'breast_density', \
+    # 'left or right breast', 'image view', \
+    # 'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
+    # 'assessment', 'subtlety', 'image file path', 'cropped image file path', \
+    # 'ROI mask file path'])
+    # train_data['pathology'] = train_data['pathology'].astype(int)
+    # train_data.rename(columns = {'cropped image file path': 'id'})
+
+    train_data = pd.read_csv("small_train.csv")    
+
+    best_model = find_best_model(models, parameters_grid, train_data, outcome)
+
+    

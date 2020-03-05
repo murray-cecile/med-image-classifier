@@ -2,6 +2,7 @@
 Full pipeline
 '''
 import os
+import argparse
 import numpy as np
 import pandas as pd
 import pydicom
@@ -13,6 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import minmax_scale
 import preprocess as p
 
+pd.set_option('display.max_columns', 500)
 
 #FILE = r'./Mass-Training_P_00059_LEFT_CC_1-07-20-2016-DDSM-17695-1-cropped_images-02767-000000.dcm'
 #MASK = r'./Mass-Training_P_00059_LEFT_CC_1-07-21-2016-DDSM-38707-1-ROI_mask_images-82600-000000.dcm'
@@ -28,7 +30,7 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
     df = pd.DataFrame()
 
     labels = pd.read_csv(train_csv)
-    labels['id'] = labels['id'].str.split('/').str[0]
+    labels['id'] = labels['cropped image file path'].str.split('/').str[0] 
 
     for file in list_of_files:
         try:
@@ -69,4 +71,12 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
 
 
 
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-path", "--path", default = PATH, help = "Raw image file path")
+    parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
+    args = parser.parse_args()
+
+    
 

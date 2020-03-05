@@ -103,24 +103,25 @@ def go(file):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-path", "--path", help = "Raw image file path")
+    parser.add_argument("-path", "--path", default = "", help = "Raw image file path")
     args = parser.parse_args()
 
-    for file in os.listdir(args.path):
+    if args.path:
+        for file in os.listdir(args.path):
 
-        try:
-            file_path = args.path + '/' + file
-            a = dd.open_img(file_path).pixel_array
+            try:
+                file_path = args.path + '/' + file
+                a = dd.open_img(file_path).pixel_array
 
-            fig, axes = plt.subplots(1, 2, figsize=(8, 8))
-            ax = axes.flatten()
+                fig, axes = plt.subplots(1, 2, figsize=(8, 8))
+                ax = axes.flatten()
 
-            ax[0].imshow(a)
+                ax[0].imshow(a)
 
-            b = threshold_img(a, 50) #Why 90?
-            ax[1].imshow(b)
-            
-            plt.show()
-            
-        except:
-            print('Could not convert: ', file)
+                b = threshold_img(a, 50) #Why 90?
+                ax[1].imshow(b)
+                
+                plt.show()
+                
+            except:
+                print('Could not convert: ', file)

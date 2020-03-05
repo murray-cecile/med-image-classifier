@@ -1,6 +1,7 @@
 #!usr/bin/bash
 
 # PROVIDE THE FULL FILEPATH TO THE DIRECTORY WHERE IMAGES ARE STORED AS A COMMAND LINE ARGUMENT
+# RUN THIS IN THE DIRECTORY WHERE THE IMAGES ARE SAVED
 
 
 # Step 1: Add desired images to the cart and download (I bulk selected the first 100)
@@ -15,3 +16,7 @@ cd $FILEDIR
 rename -- "s/-.+-med-image-classifier-raw-CBIS-DDSM-//" *
 # rename -- 's/-Users-Tammy-Documents-_MSCAPP-Winter_2020-Computer_Vision_MP-med-image-classifier-raw--CBIS-DDSM-//
 cd ..
+
+# Step 5: optional, move the binary ROI masks to a different subdirectory
+# mkdir raw/binary_roi
+# mv raw/*0.dcm raw/binary_roi
