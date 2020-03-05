@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 
 from skimage.measure import label, regionprops, regionprops_table
 from skimage.color import label2rgb
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import minmax_scale
 import preprocess as p
 
 
@@ -20,7 +22,7 @@ TRAIN_CSV = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-
 
 def properties(path=PATH, train_csv=TRAIN_CSV):
     '''
-    Calculate baseline set of features given a directory.
+    Calculate baseline set of features given the training directory.
     '''
     list_of_files = os.listdir(path)
     df = pd.DataFrame()
@@ -51,6 +53,12 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
         except:
             print('Could not process: ', file)
 
+    # Standardize numeric columns
+    df[['area', 'convex_area', 'eccentricity', 'equivalent_diameter',\
+        'major_axis_length', 'minor_axis_length', 'orientation', 'perimeter']] =\
+        minmax_scale(df[['area', 'convex_area', 'eccentricity', 'equivalent_diameter',\
+        'major_axis_length', 'minor_axis_length', 'orientation', 'perimeter']])
+
     full_data = df.join(labels.set_index('id'), on='id')
     # Change benign without callback to benign
     full_data.loc[full_data['pathology'] == 'BENIGN_WITHOUT_CALLBACK', 'pathology'] = 'BENIGN'
@@ -58,21 +66,6 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
     full_data.loc[full_data['pathology'] == 'MALIGNANT', 'pathology'] = 1
 
     return full_data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
