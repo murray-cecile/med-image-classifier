@@ -43,6 +43,8 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
                                                   #'moments_central', # Central moments up to 3rd order
                                                   'orientation',
                                                   'perimeter',])
+            for key in props: 
+                props[key] = float(props[key]) 
             props['id'] = original.PatientID
             df = df.append(props, ignore_index=True)
         
@@ -50,15 +52,15 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
             print('Could not process: ', file)
 
     full_data = df.join(labels.set_index('id'), on='id')
-    
+    # Change benign without callback to benign
+    full_data.loc[full_data['pathology'] == 'BENIGN_WITHOUT_CALLBACK', 'pathology'] = 'BENIGN'
+    full_data.loc[full_data['pathology'] == 'BENIGN', 'pathology'] = 0
+    full_data.loc[full_data['pathology'] == 'MALIGNANT', 'pathology'] = 1
+
     return full_data
 
 
-def extract_label(train_csv=TRAIN_CSV):
-    '''
-    Extracts the labels from the CSV
-    '''
-    
+
 
 
 
