@@ -5,6 +5,8 @@ import pandas as pd
 import sklearn
 import datetime
 import timeit
+import argparse
+
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import ParameterGrid
@@ -44,9 +46,9 @@ def find_best_model(models, parameters_grid, x_train, outcome_label):
             # Calculate MSE using 5-fold cross validation
             # Change signs because scoring is negative MSE
             x_train_no_id = x_train.drop('id', axis=1)
-            print(x_train_no_id.head())
-            print(x_train_no_id.drop(outcome_label, axis=1).head())
-            print(x_train[outcome_label].head())
+            # print(x_train_no_id.head())
+            # print(x_train_no_id.drop(outcome_label, axis=1).head())
+            # print(x_train[outcome_label].head())
             scores = cross_val_score(estimator=model,
                                      X=x_train_no_id.drop(outcome_label, axis=1),
                                      y=x_train[outcome_label], # series or dataframe preferred?
@@ -117,6 +119,12 @@ def main():
 if __name__ == '__main__':
     # main()
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-path", "--path", default = PATH, help = "Raw image file path")
+    parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
+    args = parser.parse_args()
+
+
     models = {'Tree': DecisionTreeRegressor(max_depth=10),
               'Lasso': Lasso(alpha=0.1),
               'Ridge': Ridge(alpha=.5),
@@ -131,17 +139,17 @@ if __name__ == '__main__':
 
     outcome = 'pathology'
 
-    # full_data = pipe.properties(path = "raw/", train_csv="metadata/mass_case_description_train_set.csv")
+    full_data = pipe.properties(path = args.path, train_csv = args.train_csv)
 
-    # train_data = full_data.drop(columns = ['patient_id', 'breast_density', \
-    # 'left or right breast', 'image view', \
-    # 'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
-    # 'assessment', 'subtlety', 'image file path', 'cropped image file path', \
-    # 'ROI mask file path'])
-    # train_data['pathology'] = train_data['pathology'].astype(int)
-    # train_data.rename(columns = {'cropped image file path': 'id'})
+    train_data = full_data.drop(columns = ['patient_id', 'breast_density', \
+    'left or right breast', 'image view', \
+    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
+    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
+    'ROI mask file path'])
+    train_data['pathology'] = train_data['pathology'].astype(float)
 
-    train_data = pd.read_csv("small_train.csv")    
+    train_data.to_csv("train_133.csv")
+    # train_data = pd.read_csv("small_train.csv")    
 
     best_model = find_best_model(models, parameters_grid, train_data, outcome)
 

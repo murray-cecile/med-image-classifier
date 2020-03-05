@@ -78,5 +78,3 @@ if __name__ == "__main__":
     parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
     args = parser.parse_args()
 
-    
-
