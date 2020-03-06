@@ -106,6 +106,11 @@ if __name__ == "__main__":
     parser.add_argument("-path", "--path", default = "", help = "Raw image file path")
     args = parser.parse_args()
 
+    benign_path = "raw/Mass-Training_P_00094_RIGHT_CC_1-07-21-2016-DDSM-28205-1-ROI_mask_images-66357-000001.dcm"
+    malignant_path = "raw/Mass-Training_P_00068_RIGHT_CC_1-07-21-2016-DDSM-82707-1-ROI_mask_images-31039-000001.dcm"
+
+
+    # this only runs if you provided a file path as a command line argument
     if args.path:
         for file in os.listdir(args.path):
 

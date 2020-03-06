@@ -12,7 +12,9 @@ from skimage.measure import label, regionprops, regionprops_table
 from skimage.color import label2rgb
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import minmax_scale
+
 import preprocess as p
+import create_features as cf
 
 pd.set_option('display.max_columns', 500)
 
@@ -22,19 +24,19 @@ PATH = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-image
 TRAIN_CSV = r'/Users/Tammy/Documents/_MSCAPP/Winter_2020/Computer_Vision_MP/med-image-classifier/metadata/training_labels.csv'
 
 
-def properties(path=PATH, train_csv=TRAIN_CSV):
+def properties(img_dir=PATH, csv_path=TRAIN_CSV):
     '''
     Calculate baseline set of features given the training directory.
     '''
-    list_of_files = os.listdir(path)
+    list_of_files = os.listdir(img_dir)
     df = pd.DataFrame()
 
-    labels = pd.read_csv(train_csv)
+    labels = pd.read_csv(csv_path)
     labels['id'] = labels['cropped image file path'].str.split('/').str[0] 
 
     for file in list_of_files:
         try:
-            full_path = path + file
+            full_path = img_dir + file
             filled_img, original = p.go(full_path)
             label_image = label(filled_img)
             props = regionprops_table(label_image,
@@ -52,6 +54,9 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
             props['id'] = original.PatientID
             df = df.append(props, ignore_index=True)
         
+            # manual feature generation from create_features
+            manual_features = cf.go() # NOT IMPLEMENTED
+            # TO DO: merge these on
         except:
             print('Could not process: ', file)
 
@@ -67,8 +72,39 @@ def properties(path=PATH, train_csv=TRAIN_CSV):
     full_data.loc[full_data['pathology'] == 'BENIGN', 'pathology'] = 0
     full_data.loc[full_data['pathology'] == 'MALIGNANT', 'pathology'] = 1
 
+    full_data['pathology'] = full_data['pathology'].astype(float)
+
     return full_data
 
+
+# TO DO: TEST THIS FUNCTION IN PREDICTION_LOOP.PY
+def go(train_path, test_path, train_csv, test_csv):
+    '''
+    Creates train data, test data, and test labels for the prediction loop
+    Takes: file paths to image directories and train/test metadata csvs
+    Returns: train, test, and test labels
+    '''
+
+    train_data = properties(train_path, train_csv)
+    test_data = properties(test_path, test_csv)
+
+    # drop extraneous columns - maybe change this in properties() instead?
+    train_data = train_data.drop(columns = ['patient_id', 'breast_density', \
+    'left or right breast', 'image view', \
+    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
+    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
+    'ROI mask file path'])
+    test_data = test_data.drop(columns = ['patient_id', 'breast_density', \
+    'left or right breast', 'image view', \
+    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
+    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
+    'ROI mask file path'])
+
+    # extract the labels from the test data
+    test_labels = test_data['pathology']
+    test_data = test_data.drop(columns = ['pathology'])
+    
+    return train_data, test_data, test_labels
 
 
 if __name__ == "__main__":
