@@ -63,7 +63,19 @@ def morph_snake(original, filtered):
                          init, alpha=0.015, beta=10, gamma=0.001)
   return snake
 
-def compute_feats(image, kernels):
+def gabor_feat(image, kernels):
+    '''
+    Gabor features
+    '''    
+    kernels = []
+    for theta in range(4):
+        theta = theta / 4. * np.pi
+        for sigma in (1, 3):
+            for frequency in (0.05, 0.25):
+                kernel = np.real(gabor_kernel(frequency, theta=theta,
+                                              sigma_x=sigma, sigma_y=sigma))
+                kernels.append(kernel)
+
     feats = np.zeros((len(kernels), 2), dtype=np.double)
     for k, kernel in enumerate(kernels):
         filtered = nd.convolve(image, kernel, mode='wrap')
@@ -71,7 +83,7 @@ def compute_feats(image, kernels):
         feats[k, 1] = filtered.var()
     return feats
 
-def match(feats, ref_feats):
+def gabor_match(feats, ref_feats):
     min_error = np.inf
     min_i = None
     for i in range(ref_feats.shape[0]):
@@ -81,13 +93,5 @@ def match(feats, ref_feats):
             min_i = i
     return min_i
 
-# prepare filter bank kernels
-kernels = []
-for theta in range(4):
-    theta = theta / 4. * np.pi
-    for sigma in (1, 3):
-        for frequency in (0.05, 0.25):
-            kernel = np.real(gabor_kernel(frequency, theta=theta,
-                                          sigma_x=sigma, sigma_y=sigma))
-            kernels.append(kernel)
+
 
