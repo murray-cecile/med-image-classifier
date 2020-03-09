@@ -108,7 +108,7 @@ def main():
                        }
 
     outcome = 'pathology'
-    train, test, test_ids = pipe.go() # CM implemented pipe.go, but hasn't tested
+    train, test, test_ids = pipe.go() # not really implemented right now, needs arguments
 
     best_model = find_best_model(models, parameters_grid, train, outcome)
 

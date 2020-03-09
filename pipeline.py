@@ -55,8 +55,9 @@ def properties(img_dir=PATH, csv_path=TRAIN_CSV):
             df = df.append(props, ignore_index=True)
         
             # manual feature generation from create_features
-            manual_features = cf.go() # NOT IMPLEMENTED
-            # TO DO: merge these on
+            manual_features = cf.make_all_features(original, filled_img) 
+            df = df.merge(manual_features, how = 'left', on = 'id', validate = "1:1")
+
         except:
             print('Could not process: ', file)
 
@@ -78,7 +79,7 @@ def properties(img_dir=PATH, csv_path=TRAIN_CSV):
 
 
 # TO DO: TEST THIS FUNCTION IN PREDICTION_LOOP.PY
-def go(train_path, test_path, train_csv, test_csv):
+def go(train_path, train_csv, test_path = None, test_csv = None):
     '''
     Creates train data, test data, and test labels for the prediction loop
     Takes: file paths to image directories and train/test metadata csvs
@@ -86,23 +87,27 @@ def go(train_path, test_path, train_csv, test_csv):
     '''
 
     train_data = properties(train_path, train_csv)
-    test_data = properties(test_path, test_csv)
-
+    
     # drop extraneous columns - maybe change this in properties() instead?
     train_data = train_data.drop(columns = ['patient_id', 'breast_density', \
     'left or right breast', 'image view', \
     'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
     'assessment', 'subtlety', 'image file path', 'cropped image file path', \
     'ROI mask file path'])
-    test_data = test_data.drop(columns = ['patient_id', 'breast_density', \
-    'left or right breast', 'image view', \
-    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
-    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
-    'ROI mask file path'])
 
-    # extract the labels from the test data
-    test_labels = test_data['pathology']
-    test_data = test_data.drop(columns = ['pathology'])
+    if test_path and test_csv:
+        test_data = properties(test_path, test_csv)
+        test_data = test_data.drop(columns = ['patient_id', 'breast_density', \
+        'left or right breast', 'image view', \
+        'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
+        'assessment', 'subtlety', 'image file path', 'cropped image file path', \
+        'ROI mask file path'])
+
+        # extract the labels from the test data
+        test_labels = test_data['pathology']
+        test_data = test_data.drop(columns = ['pathology'])
+    else:
+        test_labels = None
     
     return train_data, test_data, test_labels
 
@@ -114,3 +119,4 @@ if __name__ == "__main__":
     parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
     args = parser.parse_args()
 
+    pipe.go(args.path, args.train_csv)

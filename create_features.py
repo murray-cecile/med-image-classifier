@@ -146,6 +146,7 @@ def compute_spiculation(original, segmented_mask):
     # filter approach based on Huo and Giger (1995)
     # they use Sobel but Scharr is supposed to be rotation invariant (?)
     theta, magnitude = compute_scharr(original.pixel_array, mask = segmented_mask)
+    std_dev_A = compute_gradient_std(theta, magnitude)
 
     # TO DO: just use the 1 pixel border
     
@@ -154,14 +155,22 @@ def compute_spiculation(original, segmented_mask):
     # TO DO: repeat the above but using an opening filter (20% of size, circular)
 
     # higher standard deviation here indicates more spiculation
-    return compute_gradient_std(theta, magnitude)
+    return std_dev_A
  
 
-def go():
+def make_all_features(original, filled):
     '''
+    Runs all manual feature generation features on images
+    Takes: original image (dicom) and region mask pixel array
+    Returns: single row of data frame with features computed
     '''
-    pass
-
+    
+    df = pd.DataFrame([original.PatientID, \
+                        compute_gradient_std(original, filled)], \
+                    columns = ['id', \
+                                'spiculationA'])
+    
+    return df
 
 
 if __name__ == "__main__":
