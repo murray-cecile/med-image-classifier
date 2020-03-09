@@ -108,66 +108,54 @@ def compute_sobel(img, mask = None):
     s_v = sobel_v(img, mask = mask)
     return np.arctan2(s_v, s_h), np.sqrt(s_v**2 + s_h**2)
 
-def compute_scharr(img):
+def compute_scharr(img, mask = None):
     '''
     Compute the gradient direction and magnitude using Scharr filter 
     Takes: segmented image array
     Returns: array of angles
     '''
 
-    s_h = sobel_h(img)
-    s_v = sobel_v(img)
+    s_h = scharr_h(img, mask = mask)
+    s_v = scharr_v(img, mask = mask)
     return np.arctan2(s_v, s_h), np.sqrt(s_v**2 + s_h**2)
 
-# THIS IS REALLY SLOW AND POSSIBLY INCORRECT
-def compute_local_std(theta, magnitude):
+
+def compute_gradient_std(theta, magnitude):
     '''
-    Compute standard deviation of radial angle/magnitude distribution for 5x5 
-        pixel neighborhoods
-    Takes: arrays of thetas and gradient magnitudes from Sobel or Scharr
-    Returns: array of standard deviations from each 5x5 pixel neighborhood
+    Takes: array of angles and array of magnitudes from Sobel/Scharr
+    Returns: standard deviation of normalized magnitude-angle distribution
     '''
 
-    x_dim = theta.shape[0] - theta.shape[0] % 5
-    y_dim = theta.shape[1] - theta.shape[1] % 5
+    avg = np.mean(magnitude)
+    x_dim = theta.shape[0] 
+    y_dim = theta.shape[1] 
 
-    # create 5x5 chunks (ignoring max of 4 pixels on right and bottom edge)
-    theta_nhoods = view_as_blocks(theta[:x_dim, :y_dim], block_shape = (5, 5))
-    magnitude_nhoods = view_as_blocks(magnitude[:x_dim, :y_dim], block_shape = (5, 5))
-    
-    # for each neighborhood:
-        # sum the gradient magnitudes by radial angle
-        # divide by average gradient magnitude
-        # compute 2 * standard deviation to get "full width at half max"
-    a_shape = theta_nhoods.shape
-    fwhm = np.zeros(a_shape[0] * a_shape[1]).reshape(a_shape[0], a_shape[1])
+    t = theta.reshape((x_dim * y_dim, 1))
+    m = magnitude.reshape((x_dim * y_dim, 1))
+    df = pd.DataFrame(np.hstack((t, m)), columns = ["theta", "magnitude"])
 
-    for i in range(0, a_shape[0]):
-        for j in range(0, a_shape[1]):
+    if avg != 0:
+        edge_gradient_dist = df.groupby(['theta'], as_index=False).sum() / avg
 
-            t = theta_nhoods[i, j].reshape([25, 1])
-            m = magnitude_nhoods[i, j].reshape([25, 1])
-            df = pd.DataFrame(np.hstack((t, m)), columns = ["theta", "magnitude"])
-            df_mean = df['magnitude'].mean() 
+    return edge_gradient_dist['magnitude'].std()
 
-            if df_mean != 0:
-                edge_gradient_dist = df.groupby(['theta'], as_index=False).sum() / df_mean
-                # edge_gradient_dist.reset_index                
-                fwhm[i, j] = 2 * np.std(edge_gradient_dist['theta'])
 
-    return fwhm
-
-# INCOMPLETE
+# TO DO: try more of the neighborhoods in Huo and Giger (1995)
 def compute_spiculation(original, segmented_mask):
 
-    # Sobel filter approach based on Huo and Giger (1995)
-    theta, magnitude = compute_sobel(original.pixel_array, mask = segmented_mask)
+    # filter approach based on Huo and Giger (1995)
+    # they use Sobel but Scharr is supposed to be rotation invariant (?)
+    theta, magnitude = compute_scharr(original.pixel_array, mask = segmented_mask)
 
-    # arrays with more positive values here should be more spiculated
-    out_array = compute_local_std(theta, magnitude)
+    # TO DO: just use the 1 pixel border
+    
+    # TO DO: use 20 pixels inside and outside border
 
-    return out_array
+    # TO DO: repeat the above but using an opening filter (20% of size, circular)
 
+    # higher standard deviation here indicates more spiculation
+    return compute_gradient_std(theta, magnitude)
+ 
 
 def go():
     '''
@@ -190,6 +178,11 @@ if __name__ == "__main__":
     # plt.imshow(orig_malignant.pixel_array)
     # plt.show()
 
+    # b_thetas, b_magnitudes = compute_sobel(orig_benign.pixel_array, benign)
+    # m_thetas, m_magnitudes = compute_sobel(orig_malignant.pixel_array, malignant)
+
+    print(compute_spiculation(orig_benign, benign))
+    print(compute_spiculation(orig_malignant, malignant))
 
     # I don't know how to interpret the results of this
     # hough_trans = hough_line(filled_img)
