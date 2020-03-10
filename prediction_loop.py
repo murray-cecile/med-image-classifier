@@ -50,9 +50,6 @@ def find_best_model(models, parameters_grid, x_train, outcome_label):
             # Calculate MSE using 5-fold cross validation
             # Change signs because scoring is negative MSE
             x_train_no_id = x_train.drop('id', axis=1)
-            # print(x_train_no_id.head())
-            # print(x_train_no_id.drop(outcome_label, axis=1).head())
-            # print(x_train[outcome_label].head())
             scores = cross_val_score(estimator=model,
                                      X=x_train_no_id.drop(outcome_label, axis=1),
                                      y=x_train[outcome_label], # series or dataframe preferred?

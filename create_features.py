@@ -26,7 +26,7 @@ from skimage.filters import scharr_h
 from skimage.filters import scharr_v
 from skimage.segmentation import clear_border
 from skimage.measure import label, regionprops
-from skimage.morphology import closing, square
+from skimage.morphology import closing, square, disk, opening
 from skimage.color import label2rgb
 from skimage.transform import hough_line
 
@@ -150,7 +150,8 @@ def get_border_pixels(mask):
     '''
 
     distance = ndimage.distance_transform_edt(mask)
-    distance[distance != 1] = 0
+    distance[distance == 0] = 0
+    distance[distance > 3] = 0 # take a 3 pixel border...
     return distance
 
 
@@ -164,17 +165,27 @@ def compute_spiculation(original, segmented_mask):
     theta_A, magnitude_A = compute_scharr(orig, mask = segmented_mask)
     std_dev_A = compute_gradient_std(theta_A, magnitude_A)
 
-    # B: just use the 1 pixel border
+    # B: just use a 3? pixel border
     border_mask = get_border_pixels(segmented_mask)
     theta_B, magnitude_B = compute_scharr(orig, mask = border_mask)
     std_dev_B = compute_gradient_std(theta_B, magnitude_B)
 
-    # TO DO: use 20 pixels inside and outside border
+    # C: use the whole ROI 
+    # ideally would reduce to 20 pixel adjacent area but not working right now
+    # ymin, xmin, ymax, xmax = regionprops(segmented_mask[0]).bbox
+    # bbox_mask = np.zeros(orig.shape)
+    # bbox_mask[ymin:ymax, xmin:xmax] = 1
+    # region_bbox = orig * bbox_mask
+    theta_C, magnitude_C = compute_scharr(orig)
+    std_dev_C = compute_gradient_std(theta_C, magnitude_C)
 
-    # TO DO: repeat the above but using an opening filter (20% of size, circular)
+    # D: use non-region ROI after applying opening (circular, arbitrary size right now)
+    open_nonregion = opening(np.where(segmented_mask == 0, 1, 0), disk(5))
+    theta_D, magnitude_D = compute_scharr(orig, mask = open_nonregion)
+    std_dev_D = compute_gradient_std(theta_D, magnitude_D)
 
     # higher standard deviation here indicates more spiculation
-    return {'A': std_dev_A, 'B': std_dev_B}
+    return {'A': std_dev_A, 'B': std_dev_B, 'C': std_dev_C, 'D': std_dev_D}
  
 
 def make_all_features(original, filled):
@@ -186,14 +197,16 @@ def make_all_features(original, filled):
     
     spiculation = compute_spiculation(original, filled)
     mf = {'spiculationA': spiculation['A'], \
-        'spiculationB': spiculation['B']}
+        'spiculationB': spiculation['B'], \
+        'spiculationC': spiculation['C'], \
+        'spiculationD': spiculation['D']}
     
     return mf
 
 
 if __name__ == "__main__":
     
-    benign_path = "raw/Mass-Training_P_00169_RIGHT_MLO_1-07-21-2016-DDSM-75457-1-ROI_mask_images-57822-000001.dcm"
+    benign_path = "raw/Mass-Training_P_00187_LEFT_CC_1-07-21-2016-DDSM-85364-1-ROI_mask_images-25005-000000.dcm"
     malignant_path = "raw/Mass-Training_P_00149_LEFT_CC_1-07-21-2016-DDSM-06526-1-ROI_mask_images-57657-000001.dcm"
 
     # read in a test image to play with

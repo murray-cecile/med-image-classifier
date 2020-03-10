@@ -83,7 +83,7 @@ def properties(img_dir=PATH, csv_path=TRAIN_CSV):
     return full_data
 
 
-# TO DO: TEST THIS FUNCTION IN PREDICTION_LOOP.PY
+
 def go(train_path, train_csv, test_path = None, test_csv = None):
     '''
     Creates train data, test data, and test labels for the prediction loop
