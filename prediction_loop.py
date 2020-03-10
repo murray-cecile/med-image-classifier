@@ -143,17 +143,9 @@ if __name__ == '__main__':
 
     outcome = 'pathology'
 
-    full_data = pipe.properties(path = args.path, train_csv = args.train_csv)
+    train_data, test, test_labels = pipe.go(args.path, args.train_csv)
 
-    train_data = full_data.drop(columns = ['patient_id', 'breast_density', \
-    'left or right breast', 'image view', \
-    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
-    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
-    'ROI mask file path'])
-    train_data['pathology'] = train_data['pathology'].astype(float)
-
-    train_data.to_csv("train_133.csv")
-    # train_data = pd.read_csv("small_train.csv")    
+    train_data.to_csv("current_train.csv")
 
     best_model = find_best_model(models, parameters_grid, train_data, outcome)
 

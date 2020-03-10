@@ -127,8 +127,8 @@ def compute_gradient_std(theta, magnitude):
     '''
 
     avg = np.mean(magnitude)
-    x_dim = theta.shape[0] 
-    y_dim = theta.shape[1] 
+    # print("average magnitude is ", avg)
+    x_dim, y_dim = theta.shape
 
     t = theta.reshape((x_dim * y_dim, 1))
     m = magnitude.reshape((x_dim * y_dim, 1))
@@ -145,7 +145,7 @@ def compute_spiculation(original, segmented_mask):
 
     # filter approach based on Huo and Giger (1995)
     # they use Sobel but Scharr is supposed to be rotation invariant (?)
-    theta, magnitude = compute_scharr(original.pixel_array, mask = segmented_mask)
+    theta, magnitude = compute_sobel(original.pixel_array, mask = segmented_mask)
     std_dev_A = compute_gradient_std(theta, magnitude)
 
     # TO DO: just use the 1 pixel border
@@ -165,18 +165,16 @@ def make_all_features(original, filled):
     Returns: single row of data frame with features computed
     '''
     
-    df = pd.DataFrame([original.PatientID, \
-                        compute_gradient_std(original, filled)], \
-                    columns = ['id', \
-                                'spiculationA'])
+    spiculation = compute_spiculation(original, filled)
+    mf = {'spiculationA': spiculation}
     
-    return df
+    return mf
 
 
 if __name__ == "__main__":
     
-    benign_path = "raw/Mass-Training_P_00094_RIGHT_CC_1-07-21-2016-DDSM-28205-1-ROI_mask_images-66357-000001.dcm"
-    malignant_path = "raw/Mass-Training_P_00068_RIGHT_CC_1-07-21-2016-DDSM-82707-1-ROI_mask_images-31039-000001.dcm"
+    benign_path = "raw/Mass-Training_P_00169_RIGHT_MLO_1-07-21-2016-DDSM-75457-1-ROI_mask_images-57822-000001.dcm"
+    malignant_path = "raw/Mass-Training_P_00149_LEFT_CC_1-07-21-2016-DDSM-06526-1-ROI_mask_images-57657-000001.dcm"
 
     # read in a test image to play with
     benign, orig_benign = p.go(benign_path)
@@ -190,8 +188,10 @@ if __name__ == "__main__":
     # b_thetas, b_magnitudes = compute_sobel(orig_benign.pixel_array, benign)
     # m_thetas, m_magnitudes = compute_sobel(orig_malignant.pixel_array, malignant)
 
-    print(compute_spiculation(orig_benign, benign))
-    print(compute_spiculation(orig_malignant, malignant))
+    # print(compute_spiculation(orig_benign, benign))
+    # print(compute_spiculation(orig_malignant, malignant))
+
+    # make_all_features(orig_malignant, malignant)
 
     # I don't know how to interpret the results of this
     # hough_trans = hough_line(filled_img)

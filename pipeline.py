@@ -49,17 +49,22 @@ def properties(img_dir=PATH, csv_path=TRAIN_CSV):
                                                   #'moments_central', # Central moments up to 3rd order
                                                   'orientation',
                                                   'perimeter',])
+
+            # manual feature generation from create_features
+            manual_features = cf.make_all_features(original, filled_img) 
+            # print(manual_features)
+            for f in manual_features.keys():
+                props[f] = manual_features[f]
+
             for key in props: 
                 props[key] = float(props[key]) 
             props['id'] = original.PatientID
+
             df = df.append(props, ignore_index=True)
         
-            # manual feature generation from create_features
-            manual_features = cf.make_all_features(original, filled_img) 
-            df = df.merge(manual_features, how = 'left', on = 'id', validate = "1:1")
-
-        except:
+        except Exception as e:
             print('Could not process: ', file)
+            print(e)
 
     # Standardize numeric columns
     df[['area', 'convex_area', 'eccentricity', 'equivalent_diameter',\
@@ -107,6 +112,7 @@ def go(train_path, train_csv, test_path = None, test_csv = None):
         test_labels = test_data['pathology']
         test_data = test_data.drop(columns = ['pathology'])
     else:
+        test_data = None
         test_labels = None
     
     return train_data, test_data, test_labels
@@ -119,4 +125,7 @@ if __name__ == "__main__":
     parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
     args = parser.parse_args()
 
-    pipe.go(args.path, args.train_csv)
+    try:
+        train, test, test_labels = go(args.path, args.train_csv)
+    except Exception as e:
+        print(e)

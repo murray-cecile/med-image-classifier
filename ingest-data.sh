@@ -19,4 +19,4 @@ cd ..
 
 # Step 5: optional, move the binary ROI masks to a different subdirectory
 # mkdir raw/binary_roi
-# mv raw/*0.dcm raw/binary_roi
+# find raw/ -type f -size +1M -exec mv {} raw/binary_roi \;
