@@ -102,31 +102,8 @@ def go(file):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-path", "--path", default = "", help = "Raw image file path")
-    args = parser.parse_args()
+    benign_path = "raw/Mass-Training_P_00187_LEFT_CC_1-07-21-2016-DDSM-85364-1-ROI_mask_images-25005-000000.dcm"
+    malignant_path = "raw/Mass-Training_P_00149_LEFT_CC_1-07-21-2016-DDSM-06526-1-ROI_mask_images-57657-000001.dcm"
 
-    benign_path = "raw/Mass-Training_P_00094_RIGHT_CC_1-07-21-2016-DDSM-28205-1-ROI_mask_images-66357-000001.dcm"
-    malignant_path = "raw/Mass-Training_P_00068_RIGHT_CC_1-07-21-2016-DDSM-82707-1-ROI_mask_images-31039-000001.dcm"
-
-
-    # this only runs if you provided a file path as a command line argument
-    if args.path:
-        for file in os.listdir(args.path):
-
-            try:
-                file_path = args.path + '/' + file
-                a = dd.open_img(file_path).pixel_array
-
-                fig, axes = plt.subplots(1, 2, figsize=(8, 8))
-                ax = axes.flatten()
-
-                ax[0].imshow(a)
-
-                b = threshold_img(a, 50) #Why 90?
-                ax[1].imshow(b)
-                
-                plt.show()
-                
-            except:
-                print('Could not convert: ', file)
+    # benign, orig_benign = go(benign_path)
+    # malignant, orig_malignant = go(malignant_path)

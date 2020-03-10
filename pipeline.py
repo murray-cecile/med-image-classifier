@@ -34,6 +34,13 @@ def properties(img_dir=PATH, csv_path=TRAIN_CSV):
     labels = pd.read_csv(csv_path)
     labels['id'] = labels['cropped image file path'].str.split('/').str[0] 
 
+    # drop extraneous metadata columns
+    labels.drop(columns = ['patient_id', 'breast_density', \
+    'left or right breast', 'image view', \
+    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
+    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
+    'ROI mask file path'], inplace=True)
+
     for file in list_of_files:
         try:
             full_path = img_dir + file
@@ -83,7 +90,6 @@ def properties(img_dir=PATH, csv_path=TRAIN_CSV):
     return full_data
 
 
-
 def go(train_path, train_csv, test_path = None, test_csv = None):
     '''
     Creates train data, test data, and test labels for the prediction loop
@@ -92,21 +98,9 @@ def go(train_path, train_csv, test_path = None, test_csv = None):
     '''
 
     train_data = properties(train_path, train_csv)
-    
-    # drop extraneous columns - maybe change this in properties() instead?
-    train_data = train_data.drop(columns = ['patient_id', 'breast_density', \
-    'left or right breast', 'image view', \
-    'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
-    'assessment', 'subtlety', 'image file path', 'cropped image file path', \
-    'ROI mask file path'])
 
     if test_path and test_csv:
         test_data = properties(test_path, test_csv)
-        test_data = test_data.drop(columns = ['patient_id', 'breast_density', \
-        'left or right breast', 'image view', \
-        'abnormality id', 'abnormality type', 'mass shape', 'mass margins', \
-        'assessment', 'subtlety', 'image file path', 'cropped image file path', \
-        'ROI mask file path'])
 
         # extract the labels from the test data
         test_labels = test_data['pathology']
@@ -121,11 +115,13 @@ def go(train_path, train_csv, test_path = None, test_csv = None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-path", "--path", default = PATH, help = "Raw image file path")
+    parser.add_argument("-train", "--train", default = PATH, help = "Training image file path")
     parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
+    parser.add_argument("-test", "--test", default="", help = "Test image file path")
+    parser.add_argument("-test_csv", "--test_csv", default="", help = "Testing csv file path")
     args = parser.parse_args()
 
     try:
-        train, test, test_labels = go(args.path, args.train_csv)
+        train, test, test_labels = go(args.train, args.train_csv)
     except Exception as e:
         print(e)

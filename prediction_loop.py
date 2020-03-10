@@ -13,6 +13,7 @@ from sklearn.model_selection import ParameterGrid
 
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import Ridge, Lasso
+from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils.testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
@@ -86,64 +87,55 @@ def find_best_model(models, parameters_grid, x_train, outcome_label):
     return best_model
 
 
-#### THIS IS NOT READY ####
-def main():
+def main(args):
     '''
     EXECUTE FULL LOOP.
+    Takes: dictionary of command line arguments (should fix defaults later?)
+    Returns: right now, the training data, but eventually ?
     '''
 
     models = {'Tree': DecisionTreeRegressor(max_depth=10),
               'Lasso': Lasso(alpha=0.1),
               'Ridge': Ridge(alpha=.5),
-              'Forest': RandomForestRegressor(max_depth=2)
+              'Forest': RandomForestRegressor(max_depth=2),
+              'SVM': SVC(C=1, kernel='rbf')
               }
 
     parameters_grid = {'Tree': {'max_depth': [10, 20]},
                        'Lasso': {'alpha': [0.01, 0.1]},
                        'Ridge': {'alpha': [0.01, 0.1]},
-                       'Forest': {'max_depth': [10, 20, 50]}
+                       'Forest': {'max_depth': [10, 20, 50]},
+                       'SVM': {'C': [0.1, 1, 10]}
                        }
 
     outcome = 'pathology'
-    train, test, test_ids = pipe.go() # not really implemented right now, needs arguments
+
+    train, test, test_ids = pipe.go(args.train, args.train_csv)
+
+    train.to_csv("current_train.csv")
 
     best_model = find_best_model(models, parameters_grid, train, outcome)
 
     #Run predictions on test data and save file
-    y_hats = best_model.predict(test)
+    if args.test:
+        y_hats = best_model.predict(test)
 
-    results  = pd.DataFrame(list(zip(test_ids, y_hats)),
-                            columns =['id', 'y_hat'])
+        results  = pd.DataFrame(list(zip(test_ids, y_hats)),
+                                columns =['id', 'y_hat'])
 
-    results.to_csv('results.csv', index=False)
+        results.to_csv('results.csv', index=False)
+    
+    return train
 
 if __name__ == '__main__':
-    # main()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-path", "--path", default = PATH, help = "Raw image file path")
+    parser.add_argument("-train", "--train", default = PATH, help = "Training image file path")
     parser.add_argument("-train_csv", "--train_csv", default = TRAIN_CSV, help = "Training csv file path")
+    parser.add_argument("-test", "--test", default="", help = "Test image file path")
+    parser.add_argument("-test_csv", "--test_csv", default="", help = "Testing csv file path")
+
     args = parser.parse_args()
 
 
-    models = {'Tree': DecisionTreeRegressor(max_depth=10),
-              'Lasso': Lasso(alpha=0.1),
-              'Ridge': Ridge(alpha=.5),
-              'Forest': RandomForestRegressor(max_depth=2)
-              }
-
-    parameters_grid = {'Tree': {'max_depth': [10, 20]},
-                       'Lasso': {'alpha': [0.01, 0.1]},
-                       'Ridge': {'alpha': [0.01, 0.1]},
-                       'Forest': {'max_depth': [10, 20, 50]}
-                       }
-
-    outcome = 'pathology'
-
-    train_data, test, test_labels = pipe.go(args.path, args.train_csv)
-
-    train_data.to_csv("current_train.csv")
-
-    best_model = find_best_model(models, parameters_grid, train_data, outcome)
-
-    
+    train_data = main(args)

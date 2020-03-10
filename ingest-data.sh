@@ -14,9 +14,11 @@ find $FILEDIR -type f -exec sh -c 'for f do x=${f#./}; y="${x// /_}"; eval "mv $
 # Step 4: remove filepath portion of directory name from all files using the following Linux command:
 cd $FILEDIR
 rename -- "s/-.+-med-image-classifier-raw-CBIS-DDSM-//" *
+# rename -- "s/-.+-med-image-classifier-raw-//" *
+# rename -- "s/-.+-med-image-classifier-raw-binary_roi//" *
 # rename -- 's/-Users-Tammy-Documents-_MSCAPP-Winter_2020-Computer_Vision_MP-med-image-classifier-raw--CBIS-DDSM-//
 cd ..
 
 # Step 5: optional, move the binary ROI masks to a different subdirectory
 # mkdir raw/binary_roi
-# find raw/ -type f -size +1M -exec mv {} raw/binary_roi \;
+# find . -type f -size +1M -exec mv {} raw/binary_roi \;
