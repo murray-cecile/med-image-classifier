@@ -6,6 +6,7 @@ import pandas as pd
 import os, pydicom, cv2
 import matplotlib.pyplot as plt
 
+from scipy import ndimage
 from skimage import exposure
 from skimage.filters import gaussian
 from skimage.filters import try_all_threshold
@@ -30,7 +31,6 @@ from skimage.color import label2rgb
 from skimage.transform import hough_line
 
 import preprocess as p
-
 pd.set_option('display.max_columns', 500)
 
 def apply_contour(img):
@@ -136,37 +136,57 @@ def compute_gradient_std(theta, magnitude):
 
     if avg != 0:
         edge_gradient_dist = df.groupby(['theta'], as_index=False).sum() / avg
+        return edge_gradient_dist['magnitude'].std()
+    
+    else: 
+        return 0
 
-    return edge_gradient_dist['magnitude'].std()
+
+def get_border_pixels(mask):
+    '''
+    Extract the pixels on the border of a region
+    Takes: segmented mask
+    Returns: array mask where border pixels are 1, all others 0
+    '''
+
+    distance = ndimage.distance_transform_edt(mask)
+    distance[distance != 1] = 0
+    return distance
 
 
 # TO DO: try more of the neighborhoods in Huo and Giger (1995)
 def compute_spiculation(original, segmented_mask):
 
+    orig = original.pixel_array
+
     # filter approach based on Huo and Giger (1995)
     # they use Sobel but Scharr is supposed to be rotation invariant (?)
-    theta, magnitude = compute_sobel(original.pixel_array, mask = segmented_mask)
-    std_dev_A = compute_gradient_std(theta, magnitude)
+    theta_A, magnitude_A = compute_scharr(orig, mask = segmented_mask)
+    std_dev_A = compute_gradient_std(theta_A, magnitude_A)
 
-    # TO DO: just use the 1 pixel border
-    
+    # B: just use the 1 pixel border
+    border_mask = get_border_pixels(segmented_mask)
+    theta_B, magnitude_B = compute_scharr(orig, mask = border_mask)
+    std_dev_B = compute_gradient_std(theta_B, magnitude_B)
+
     # TO DO: use 20 pixels inside and outside border
 
     # TO DO: repeat the above but using an opening filter (20% of size, circular)
 
     # higher standard deviation here indicates more spiculation
-    return std_dev_A
+    return {'A': std_dev_A, 'B': std_dev_B}
  
 
 def make_all_features(original, filled):
     '''
-    Runs all manual feature generation features on images
+    Runs all manual feature generation features on image
     Takes: original image (dicom) and region mask pixel array
     Returns: single row of data frame with features computed
     '''
     
     spiculation = compute_spiculation(original, filled)
-    mf = {'spiculationA': spiculation}
+    mf = {'spiculationA': spiculation['A'], \
+        'spiculationB': spiculation['B']}
     
     return mf
 
