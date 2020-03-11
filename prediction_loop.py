@@ -29,6 +29,7 @@ from sklearn.ensemble import (RandomForestRegressor, AdaBoostClassifier,
                               BaggingClassifier, GradientBoostingClassifier)
 from sklearn.utils.testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
+from sklearn import metrics
 from sklearn.metrics import (classification_report, precision_recall_curve,
                              roc_auc_score, plot_roc_curve)
 import pipeline as pipe
@@ -163,20 +164,25 @@ def plot_precision_recall(y_test, y_hat, model, output_type='save'):
     plt.close()
 
 
-def plot_auc(best_model, x_test, y_test, output_type='save'):
+def plot_auc(best_model, y_test, y_hat, output_type='save'):
   '''
   Plot and save ROC_AUC curve.
   '''
-  plt.clf()
-  fig, ax1 = plt.subplots()
-  plot_roc_curve(best_model, x_test, y_test)
+  # plt.clf()
+  # fig, ax1 = plt.subplots()
+  # plot_roc_curve(best_model, x_test, y_test)
+  # title = ax1.set_title(textwrap.fill(plot_name, 70))
+  # fig.tight_layout()
+  # fig.subplots_adjust(top=0.75)  
 
   # Name plot 
   model_name = str(best_model).split('(')[0]
   plot_name = model_name
-  title = ax1.set_title(textwrap.fill(plot_name, 70))
-  fig.tight_layout()
-  fig.subplots_adjust(top=0.75)    
+  # Find metrics
+  fpr, tpr, thresholds = metrics.roc_curve(y_test, y_hat)
+  roc_auc = metrics.auc(fpr, tpr)
+  display = metrics.RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc, estimator_name=plot_name) 
+  display.plot()
 
   #Save or show plot
   if (output_type == 'save'):
@@ -285,6 +291,7 @@ def main(args):
         y_hats = best_model.predict(test.drop(columns=['id', 'pathology'],
                                               axis=1))
         roc_auc = roc_auc_score(test['pathology'], y_hats)
+
         print("Testing Data ROC_AUC Score: ", roc_auc)
         
         # Generate Test Plots
@@ -293,8 +300,8 @@ def main(args):
                               best_model,
                               'save')
         plot_auc(best_model,
-                 test.drop(columns = ['id', 'pathology']),
                  test['pathology'],
+                 y_hats,
                  'save')
         
     return None
