@@ -43,6 +43,7 @@ def plot_comparison(original, filtered):
 def generate_edges(original):
     '''
     Ensemble of binary and canny method to detect clean spiculation border
+    to do: add area maybe
     returns edges
     '''
 
