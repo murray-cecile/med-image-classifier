@@ -37,11 +37,7 @@ import preprocess as p
 import features_ROI as adf 
 
 pd.set_option('display.max_columns', 500)
-<<<<<<< HEAD
-
-=======
 @ignore_warnings(category=FutureWarning)
->>>>>>> d7f658c1f18d163df46eb2222ca3a018c63487fe
 def apply_contour(img):
     '''
     Active contour from skimage
