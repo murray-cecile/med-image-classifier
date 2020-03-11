@@ -19,10 +19,8 @@ from skimage.util import img_as_float
 from skimage.filters import gabor_kernel
 from skimage.filters import gaussian
 from skimage.segmentation import active_contour
-
-pd.set_option('display.max_columns', 500)
-
-
+from skimage.filters import threshold_mean
+from skimage.feature import canny
 
 def convert_scale_alpha(maxval):
     '''
@@ -41,29 +39,48 @@ def plot_comparison(original, filtered):
     axes[1].imshow(filtered, cmap='gray')
     axes[1].set_title('filtered')
 
-def sk_hog(original, filtered):
+
+def generate_edges(original):
+    '''
+    Ensemble of binary and canny method to detect clean spiculation border
+    returns edges
+    '''
+
+    thresh = threshold_mean(original) # binarise image
+    binary = original > thresh
+    edges = canny(binary, sigma=5)
+
+    return edges
+
+
+
+def generate_hog(original):
     '''
     Histogram of Oriented Gradient: feature descriptor for object detection
-    returns generated feature
+    returns generated feature and recaled image for comparison
     '''
-    fd, hog_image = hog(ms, orientations=5, pixels_per_cell=(5, 5),
+    fd, hog_image = hog(original, orientations=5, pixels_per_cell=(5, 5),
                     cells_per_block=(2, 1), visualize=True, multichannel=False)
     hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 255)) # Enhance constrast
-    plot_comparison(ms, hog_image_rescaled)
-    return fd
+    return fd, hog_image_rescaled
 
-def morph_snake(original, filtered):
-  '''
-  ''' 
-  s = np.linspace(0, 2*np.pi, 400)
-  r = 100 + 100*np.sin(s)
-  c = 220 + 100*np.cos(s)
-  init = np.array([r, c]).T
-  snake = active_contour(gaussian(ms, 3),
-                         init, alpha=0.015, beta=10, gamma=0.001)
-  return snake
+def generate_snake(original):
 
-def gabor_feat(image, kernels):
+    '''
+    Active contour model, modified region
+    returns feature and initialising location
+    ''' 
+
+    spic_area = 0.01*original.size
+    s = np.linspace(0, 2*np.pi, spic_area)
+    r = 200 + 100*np.sin(s)
+    c = 220 + 100*np.cos(s)
+    init = np.array([r, c]).T
+    snake = active_contour(gaussian(original, 3),
+                             init, alpha=0.015, beta=10, gamma=0.001)
+    return snake, init
+
+def generate_gabor(image):
     '''
     Gabor features
     '''    
