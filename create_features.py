@@ -160,10 +160,8 @@ def get_border_pixels(mask):
 
 
 # TO DO: try more of the neighborhoods in Huo and Giger (1995)
-def compute_spiculation(original, segmented_mask):
-
-    orig = original.pixel_array
-
+def compute_spiculation(orig, segmented_mask):
+    
     # filter approach based on Huo and Giger (1995)
     # they use Sobel but Scharr is supposed to be rotation invariant (?)
     theta_A, magnitude_A = compute_scharr(orig, mask = segmented_mask)
@@ -209,11 +207,22 @@ def make_all_features(original, filled):
     Returns: single row of data frame with features computed
     '''
     
-    spiculation = compute_spiculation(original, filled)
+    orig = original.pixel_array
+    spiculation = compute_spiculation(orig, filled)
+
+    # try computing spiculation on a rescaled version of the image
+    p_thresh, p100 = np.percentile(orig, (50, 100))
+    img_scaled = exposure.rescale_intensity(orig, in_range=(p_thresh, p100))
+    spiculation_rescaled = compute_spiculation(img_scaled, filled)
+
     mf = {'spiculationA': spiculation['A'], \
         'spiculationB': spiculation['B'], \
         'spiculationC': spiculation['C'], \
-        'spiculationD': spiculation['D']}
+        'spiculationD': spiculation['D'], \
+        'spiculationRA': spiculation_rescaled['B'], \
+        'spiculationRB': spiculation_rescaled['B'], \
+        'spiculationRC': spiculation_rescaled['C'], \
+        'spiculationRD': spiculation_rescaled['D']}
     
     return mf
 
