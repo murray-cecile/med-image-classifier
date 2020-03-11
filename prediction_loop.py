@@ -1,11 +1,14 @@
-'''
-Final Script: Prediction Challenge Loop
+#============================================================================#
+# FIT AND TEST CLASSIFICATION ALGORITHM
+#============================================================================#
 
+'''
 Runs the full classification loop. Inputs include training and testing set
 directory paths, as well as training and testing labels saved in a CSV.
 The script will print a summary of all evaluated models as well as the
 highest AUC acheived.
 '''
+
 import pandas as pd
 import sklearn
 import datetime
@@ -14,10 +17,13 @@ import argparse
 
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import ParameterGrid
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import Ridge, Lasso
 from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import (RandomForestRegressor, AdaBoostClassifier,
+                              BaggingClassifier, GradientBoostingClassifier)
 from sklearn.utils.testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
@@ -102,22 +108,33 @@ def main(args):
         train (df): pre-processed training dataframe [CHANGE LATER]
     '''
     models = {'Tree': DecisionTreeRegressor(max_depth=10),
+              'Logistic': LogisticRegression(penalty='l1'),
               'Lasso': Lasso(alpha=0.1),
               'Ridge': Ridge(alpha=.5),
               'Forest': RandomForestRegressor(max_depth=2),
-              'SVM': SVC(C=1, kernel='rbf')
+              'SVM': SVC(C=1, kernel='rbf'),
+              'Bagging': BaggingClassifier(KNeighborsClassifier(), n_estimators=10),
+              'AdaBoost': AdaBoostClassifier(n_estimators=50),
+              'GradientBoost': GradientBoostingClassifier(learning_rate=0.05),
               }
 
-    parameters_grid = {'Tree': {'max_depth': [10, 20]},
-                       'Lasso': {'alpha': [0.01, 0.1]},
-                       'Ridge': {'alpha': [0.01, 0.1]},
-                       'Forest': {'max_depth': [10, 20, 50]},
-                       'SVM': {'C': [0.1, 1, 10]}
+    parameters_grid = {'Tree': {'max_depth': [10, 20, 50]},
+                       'Logistic': {'penalty': ['l1','l2'], 'C': [0.1, 1, 10]},
+                       'Lasso': {'alpha': [0.01, 0.1, 1]},
+                       'Ridge': {'alpha': [0.01, 0.1, 1]},
+                       'Forest': {'max_depth': [10, 20, 50],
+                                  'min_samples_split': [2, 10]},
+                       'SVM': {'C': [1, 10],
+                               'kernel': ['linear', 'rbf']},
+                       'Bagging': {'n_estimators': [10, 100]},
+                       'AdaBoost': {'algorithm': ['SAMME', 'SAMME.R'],
+                                    'n_estimators': [10, 100]},
+                       'GradientBoost': {'n_estimators': [10, 100]}
                        }
 
     outcome = 'pathology'
 
-    train, test, test_ids = pipe.go(args.train, args.train_csv, args.test, args.test_csv)
+    train, test = pipe.go(args.train, args.train_csv, args.test, args.test_csv)
 
     train.to_csv("current_train.csv")
 
