@@ -19,11 +19,13 @@ from skimage.measure import label, regionprops, regionprops_table
 from skimage.color import label2rgb
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import minmax_scale
+from sklearn.utils.testing import ignore_warnings
 
 import preprocess as p
 import create_features as cf
 
 pd.set_option('display.max_columns', 500)
+@ignore_warnings(category=FutureWarning)
 def properties(img_dir, csv_path):
     '''
     Calculates a pre-processed feature set given a directory of images.

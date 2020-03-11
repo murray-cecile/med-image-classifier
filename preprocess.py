@@ -12,9 +12,10 @@ from skimage.segmentation import (morphological_chan_vese,
 from skimage.filters import threshold_otsu
 from skimage.morphology import opening
 from skimage.measure import label
-import data_download as dd
+from sklearn.utils.testing import ignore_warnings
 
 
+@ignore_warnings(category=FutureWarning)
 def threshold_img(img, pctile=50):
     '''
     Rescales image intensity and thresholds
