@@ -117,7 +117,7 @@ def main(args):
 
     outcome = 'pathology'
 
-    train, test, test_ids = pipe.go(args.train, args.train_csv)
+    train, test, test_ids = pipe.go(args.train, args.train_csv, args.test, args.test_csv)
 
     train.to_csv("current_train.csv")
 
@@ -125,7 +125,7 @@ def main(args):
 
     #Run predictions on test data and save file
     if args.test:
-        y_hats = best_model.predict(test)
+        y_hats = best_model.predict(test.drop(columns = ['id']))
 
         results  = pd.DataFrame(list(zip(test_ids, y_hats)),
                                 columns =['id', 'y_hat'])
