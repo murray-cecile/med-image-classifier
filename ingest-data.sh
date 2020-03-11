@@ -15,8 +15,8 @@ find $FILEDIR -type f -exec sh -c 'for f do x=${f#./}; y="${x// /_}"; eval "mv $
 cd $FILEDIR
 rename -- "s/-.+-med-image-classifier-raw_train-//" *
 rename -- "s/-.+-med-image-classifier-raw_test--CBIS-DDSM-//" *
-# rename -- "s/-.+-med-image-classifier-raw-binary_roi//" *
-# rename -- 's/-Users-Tammy-Documents-_MSCAPP-Winter_2020-Computer_Vision_MP-med-image-classifier-raw--CBIS-DDSM-//
+# this works for Tammy
+rename -- "s/raw_test--CBIS-DDSM-//" *
 
 # Step 5: optional, move the binary ROI masks to a different subdirectory
 mkdir binary_roi
