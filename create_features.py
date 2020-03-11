@@ -32,7 +32,7 @@ from skimage.color import label2rgb
 from skimage.transform import hough_line
 
 import preprocess as p
-import features_ROI as add_ft
+import features_ROI as adf
 
 pd.set_option('display.max_columns', 500)
 def apply_contour(img):
