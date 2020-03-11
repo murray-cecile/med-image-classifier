@@ -242,7 +242,7 @@ def main(args):
               'Lasso': Lasso(alpha=0.1),
               'Ridge': Ridge(alpha=.5),
               'Forest': RandomForestRegressor(max_depth=2),
-              #'SVM': SVC(C=1, kernel='rbf'),
+            #   'SVM': SVC(C=1, kernel='rbf'),
               'Bagging': BaggingClassifier(KNeighborsClassifier(), n_estimators=10),
               'AdaBoost': AdaBoostClassifier(n_estimators=50),
               'GradientBoost': GradientBoostingClassifier(learning_rate=0.05),
@@ -254,8 +254,8 @@ def main(args):
                        'Ridge': {'alpha': [0.01, 0.1, 1]},
                        'Forest': {'max_depth': [10, 20, 50],
                                   'min_samples_split': [2, 10]},
-                       #'SVM': {'C': [1, 10],
-                               #'kernel': ['linear', 'rbf']}, #Takes the longest
+                    #    'SVM': {'C': [1, 10],
+                    #            'kernel': ['linear', 'rbf']}, #Takes the longest
                        'Bagging': {'n_estimators': [10, 100]},
                        'AdaBoost': {'algorithm': ['SAMME', 'SAMME.R'],
                                     'n_estimators': [10, 100]},
@@ -264,9 +264,19 @@ def main(args):
 
     outcome = 'pathology'
 
-    train, test = pipe.go(args.train, args.train_csv, args.test, args.test_csv)
-    
-    train.to_csv("current_train.csv")
+    if args.train and args.train_csv:
+        print("Beginning feature generation...")
+        t0 = timeit.default_timer()
+        train, test = pipe.go(args.train, args.train_csv, args.test, args.test_csv)
+        train.to_csv("current_train.csv")
+        test.to_csv("current_test.csv")
+        t1 = timeit.default_timer() - t0
+        print("Feature generation complete, runtime: ", t1)
+    else:
+        print("Loading features from csv...")
+        train = pd.read_csv("current_train.csv")
+        test = pd.read_csv("current_test.csv")
+
     best_model = find_best_model(models, parameters_grid, train, outcome)
 
     #Run predictions on test data and calculate AUC

@@ -12,7 +12,6 @@ from skimage.segmentation import (morphological_chan_vese,
 from skimage.filters import threshold_otsu
 from skimage.morphology import opening
 from skimage.measure import label
-import data_download as dd
 
 
 def threshold_img(img, pctile=50):
