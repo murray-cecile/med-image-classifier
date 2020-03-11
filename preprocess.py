@@ -1,8 +1,6 @@
-#==============================================================================#
+#============================================================================#
 # IMAGE PRE-PROCESSING
-#
-#==============================================================================#
-
+#============================================================================#
 import numpy as np
 import os, argparse 
 import pydicom, cv2
@@ -17,7 +15,6 @@ from skimage.measure import label
 import data_download as dd
 
 
-
 def threshold_img(img, pctile=50):
     '''
     Rescales image intensity and thresholds
@@ -28,7 +25,6 @@ def threshold_img(img, pctile=50):
     # rescaling --> consider exposure.equalize_hist
     p_thresh, p100 = np.percentile(img, (pctile, 100))
     img_scaled = exposure.rescale_intensity(img, in_range=(p_thresh, p100))
-
 
     # thresholding
     img_thresh = threshold_otsu(img_scaled)
@@ -57,7 +53,8 @@ def apply_ACWE(img):
     init_ls = checkerboard_level_set(image.shape, 6)
     evolution = []
     callback = store_evolution_in(evolution)
-    ls = morphological_chan_vese(image, 3, init_level_set=init_ls, smoothing=1, iter_callback=callback)
+    ls = morphological_chan_vese(image, 3, init_level_set=init_ls,
+                                 smoothing=1, iter_callback=callback)
     #plt.figure(figsize=(9, 3))
     #plt.imshow(ls, cmap="gray")
     #plt.contour(evolution[3], [0.5], colors='y')

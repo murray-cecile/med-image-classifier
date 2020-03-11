@@ -1,6 +1,7 @@
-'''
-Playground
-'''
+#============================================================================#
+# MANUAL FEATURE CREATION
+#============================================================================#
+
 import numpy as np
 import pandas as pd
 import os, pydicom, cv2
@@ -31,8 +32,8 @@ from skimage.color import label2rgb
 from skimage.transform import hough_line
 
 import preprocess as p
-pd.set_option('display.max_columns', 500)
 
+pd.set_option('display.max_columns', 500)
 def apply_contour(img):
     '''
     Active contour from skimage
