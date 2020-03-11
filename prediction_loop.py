@@ -185,6 +185,47 @@ def plot_auc(best_model, x_test, y_test, output_type='save'):
       plt.show()
   plt.close()
 
+def estimate_beta(X):
+    '''
+    Thresholding
+    '''
+    xbar = np.mean(X)
+    vbar = np.var(X,ddof=1)
+    alphahat = xbar*(xbar*(1-xbar)/vbar - 1)
+    betahat = (1-xbar)*(xbar*(1-xbar)/vbar - 1)
+    return alphahat, betahat
+
+def plot_ss(test_y, predicted_y_probs, output_type="show"):
+    '''
+    Plot specificty and sensitivity curve
+
+    Input:
+        y_test (array): true y values in test set
+        y_hat (array): predicted y values for test set
+        model (obj): fit training model (used for title)
+        output_type (str): save or display image
+
+    Return:
+        Saved image.
+
+    '''
+    positive_beta_estimates = estimate_beta(predicted_y_probs[test_y == 1])
+    negative_beta_estimates = estimate_beta(predicted_y_probs[test_y == 0])
+    unit_interval = np.linspace(0,1,100)
+    plt.plot(unit_interval, scipy.stats.beta.pdf(unit_interval, *positive_beta_estimates), c='r', label="positive")
+    plt.plot(unit_interval, scipy.stats.beta.pdf(unit_interval, *negative_beta_estimates), c='g', label="negative")
+    
+    # Show the threshold.
+    plt.axvline(0.5, c='black', ls='dashed')
+    plt.xlim(0,1)
+    
+    #Save or show plot
+    if (output_type == 'save'):
+        plt.savefig(str(plot_name)+'.png')
+    elif (output_type == 'show'):
+        plt.show()
+    plt.close()
+
 
 def main(args):
     '''
