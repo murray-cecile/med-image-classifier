@@ -16,7 +16,7 @@ cd $FILEDIR
 rename -- "s/-.+-med-image-classifier-raw_train-//" *
 rename -- "s/-.+-med-image-classifier-raw_test--CBIS-DDSM-//" *
 # this works for Tammy
-rename -- "s/raw_test--CBIS-DDSM-//" *
+# rename -- "s/raw_test--CBIS-DDSM-//" *
 
 # Step 5: optional, move the binary ROI masks to a different subdirectory
 mkdir binary_roi

@@ -293,7 +293,7 @@ def main(args):
                               best_model,
                               'save')
         plot_auc(best_model,
-                 test.drop(columns = ['id', 'pathology']),
+                 test.drop(columns = ['id', 'pathology'], axis=1),
                  test['pathology'],
                  'save')
         

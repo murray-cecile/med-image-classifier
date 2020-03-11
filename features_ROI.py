@@ -21,6 +21,7 @@ from skimage.filters import gaussian
 from skimage.segmentation import active_contour
 from skimage.filters import threshold_mean
 from skimage.feature import canny
+from scipy import ndimage
 
 def convert_scale_alpha(maxval):
     '''
@@ -96,7 +97,7 @@ def generate_gabor(image):
 
     feats = np.zeros((len(kernels), 2), dtype=np.double)
     for k, kernel in enumerate(kernels):
-        filtered = nd.convolve(image, kernel, mode='wrap')
+        filtered = ndimage.convolve(image, kernel, mode='wrap')
         feats[k, 0] = filtered.mean()
         feats[k, 1] = filtered.var()
     return feats

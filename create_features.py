@@ -31,12 +31,17 @@ from skimage.measure import label, regionprops
 from skimage.morphology import closing, square, disk, opening
 from skimage.color import label2rgb
 from skimage.transform import hough_line
+from sklearn.utils.testing import ignore_warnings
 
 import preprocess as p
 import features_ROI as adf 
 
 pd.set_option('display.max_columns', 500)
+<<<<<<< HEAD
 
+=======
+@ignore_warnings(category=FutureWarning)
+>>>>>>> d7f658c1f18d163df46eb2222ca3a018c63487fe
 def apply_contour(img):
     '''
     Active contour from skimage
@@ -191,6 +196,16 @@ def compute_spiculation(original, segmented_mask):
     # higher standard deviation here indicates more spiculation
     return {'A': std_dev_A, 'B': std_dev_B, 'C': std_dev_C, 'D': std_dev_D}
  
+
+def compute_circularity():
+    '''
+    '''
+    # Segment
+    # Find center of mass
+    # Find area of segment
+    # Create circule that has same area
+    # Percent overlap of region with equivalent area circle
+
 
 def make_all_features(original, filled):
     '''
