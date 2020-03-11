@@ -1,8 +1,7 @@
-#==============================================================================#
-# FEATURE GENERATION FUNCTIONS
-# Functions that compute the manual features
-# This gets imported by pipeline.py
-#==============================================================================#
+#============================================================================#
+# MANUAL FEATURE CREATION
+#============================================================================#
+
 import numpy as np
 import pandas as pd
 import os, pydicom, cv2
@@ -34,14 +33,10 @@ from skimage.transform import hough_line
 from sklearn.utils.testing import ignore_warnings
 
 import preprocess as p
-import features_ROI as adf 
+import features_ROI as adf
 
 pd.set_option('display.max_columns', 500)
-<<<<<<< HEAD
-
-=======
 @ignore_warnings(category=FutureWarning)
->>>>>>> d7f658c1f18d163df46eb2222ca3a018c63487fe
 def apply_contour(img):
     '''
     Active contour from skimage
@@ -213,26 +208,20 @@ def make_all_features(original, filled):
     Takes: original image (dicom) and region mask pixel array
     Returns: single row of data frame with features computed
     '''
-
-    # call feature creation function    
+    
     spiculation = compute_spiculation(original, filled)
-    feats = adf.generate_gabor(original.pixel_array)
-
-    # then add the result to the dictionary here
     mf = {'spiculationA': spiculation['A'], \
         'spiculationB': spiculation['B'], \
         'spiculationC': spiculation['C'], \
-        'spiculationD': spiculation['D'], \
-        'gabor_real': np.mean(feats[:,0]), \
-        'gabor_imag': np.mean(feats[:,1])}
+        'spiculationD': spiculation['D']}
     
     return mf
 
 
 if __name__ == "__main__":
     
-    benign_path = "raw_train/Mass-Training_P_00187_LEFT_CC_1-07-21-2016-DDSM-85364-1-ROI_mask_images-25005-000000.dcm"
-    malignant_path = "raw_train/Mass-Training_P_00149_LEFT_CC_1-07-21-2016-DDSM-06526-1-ROI_mask_images-57657-000001.dcm"
+    benign_path = "raw/Mass-Training_P_00187_LEFT_CC_1-07-21-2016-DDSM-85364-1-ROI_mask_images-25005-000000.dcm"
+    malignant_path = "raw/Mass-Training_P_00149_LEFT_CC_1-07-21-2016-DDSM-06526-1-ROI_mask_images-57657-000001.dcm"
 
     # read in a test image to play with
     benign, orig_benign = p.go(benign_path)
@@ -243,15 +232,13 @@ if __name__ == "__main__":
     # plt.imshow(orig_malignant.pixel_array)
     # plt.show()
 
-    feats = adf.generate_gabor(orig_malignant.pixel_array)
-
     # b_thetas, b_magnitudes = compute_sobel(orig_benign.pixel_array, benign)
     # m_thetas, m_magnitudes = compute_sobel(orig_malignant.pixel_array, malignant)
 
     # print(compute_spiculation(orig_benign, benign))
     # print(compute_spiculation(orig_malignant, malignant))
 
-    mf = make_all_features(orig_malignant, malignant)
+    # make_all_features(orig_malignant, malignant)
 
     # I don't know how to interpret the results of this
     # hough_trans = hough_line(filled_img)

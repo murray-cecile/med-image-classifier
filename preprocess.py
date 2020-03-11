@@ -12,10 +12,7 @@ from skimage.segmentation import (morphological_chan_vese,
 from skimage.filters import threshold_otsu
 from skimage.morphology import opening
 from skimage.measure import label
-<<<<<<< HEAD
-=======
 from sklearn.utils.testing import ignore_warnings
->>>>>>> d7f658c1f18d163df46eb2222ca3a018c63487fe
 
 
 @ignore_warnings(category=FutureWarning)
