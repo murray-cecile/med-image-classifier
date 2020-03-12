@@ -55,6 +55,21 @@ def helper_bbox(img):
     bbox = np.min(a[0]), np.max(a[0]), np.min(a[1]), np.max(a[1])
     return bbox
 
+def generate_entropy(original):
+    '''
+    function returns entropy of a signal
+    signal must be a 1-D numpy array
+    Returns: entropy measure
+    '''
+    orig = original.pixel_array
+    
+    lensig=signal.size
+    symset=list(set(signal))
+    numsym=len(symset)
+    propab=[np.size(signal[signal==i])/(1.0*lensig) for i in symset]
+    ent=np.sum([p*np.log2(1.0/p) for p in propab])
+    return ent
+
 def generate_iou(original, segmented_mask):
     '''
     Get intersection area using bounding box defined on area
