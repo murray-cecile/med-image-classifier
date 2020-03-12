@@ -61,12 +61,13 @@ def generate_entropy(original):
     signal must be a 1-D numpy array
     Returns: entropy measure
     '''
-    orig = original.pixel_array
-    
-    lensig=signal.size
-    symset=list(set(signal))
+    orig_pix = original.pixel_array
+    orig = orig_pix.ravel()
+
+    lensig=orig.size
+    symset=list(set(orig))
     numsym=len(symset)
-    propab=[np.size(signal[signal==i])/(1.0*lensig) for i in symset]
+    propab=[np.size(orig[orig==i])/(1.0*lensig) for i in symset]
     ent=np.sum([p*np.log2(1.0/p) for p in propab])
     return ent
 
