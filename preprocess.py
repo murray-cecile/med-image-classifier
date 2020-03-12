@@ -58,7 +58,8 @@ def apply_ACWE(img):
     evolution = []
     callback = store_evolution_in(evolution)
     l = morphological_chan_vese(img, 3, init_level_set=init_ls,
-                                smoothing=1, iter_callback=callback)
+                                smoothing=1,
+                                iter_callback=callback)
     
     #plt.figure(figsize=(9, 3))
     #plt.imshow(ls, cmap="gray")
