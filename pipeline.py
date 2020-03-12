@@ -52,34 +52,40 @@ def properties(img_dir, csv_path):
     'ROI mask file path'], inplace=True)
 
     for file in list_of_files:
-        try:
-            full_path = img_dir + file
-            filled_img, original = p.go(full_path)
-            label_image = label(filled_img)
-            props = regionprops_table(label_image,
-                                      properties=['area', # Num of pixels in region
-                                                  'convex_area', # Num pixels in smallest convex polygon that encloses region
-                                                  'eccentricity', # Eccentricity of the ellipse that has the same second-moments as the region
-                                                  'equivalent_diameter', # Diameter of circle with same area as region
-                                                  'major_axis_length', # Length of major axis
-                                                  'minor_axis_length', # Length of minor axis
-                                                  'perimeter'])
+        # try:
+        full_path = img_dir + file
+        filled_img, original = p.go(full_path)
+        print(filled_img.shape)
+        print(np.unique(filled_img))
+        label_image = label(filled_img)
+        print(label_image.shape)
+        props = regionprops_table(label_image,
+                                    properties=['area', # Num of pixels in region
+                                                'convex_area', # Num pixels in smallest convex polygon that encloses region
+                                                'eccentricity', # Eccentricity of the ellipse that has the same second-moments as the region
+                                                'equivalent_diameter', # Diameter of circle with same area as region
+                                                'major_axis_length', # Length of major axis
+                                                'minor_axis_length', # Length of minor axis
+                                                'perimeter'])
+        print(props)
 
-            # manual feature generation from create_features
-            manual_features = cf.make_all_features(original, filled_img)
-            for f in manual_features.keys():
-                props[f] = manual_features[f]
+        # manual feature generation from create_features
+        manual_features = cf.make_all_features(original, filled_img)
+        for f in manual_features.keys():
+            props[f] = manual_features[f]
 
-            for key in props: 
-                props[key] = float(props[key]) 
-            # include id
-            props['id'] = original.PatientID
+        # print(props)
 
-            df = df.append(props, ignore_index=True)
-        
-        except Exception as e:
-            print('Could not process: ', file)
-            print(e)
+        for key in props: 
+            props[key] = float(props[key]) 
+        # include id
+        props['id'] = original.PatientID
+
+        df = df.append(props, ignore_index=True)
+    
+    # except Exception as e:
+        # print('Could not process: ', file)
+        # print(e)
 
     '''
     # Optional: standardize numeric columns
