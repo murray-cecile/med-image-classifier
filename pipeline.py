@@ -52,50 +52,46 @@ def properties(img_dir, csv_path):
     'ROI mask file path'], inplace=True)
 
     for file in list_of_files:
-        # try:
-        full_path = img_dir + file
-        filled_img, original = p.go(full_path)
-        print(filled_img.shape)
-        print(np.unique(filled_img))
-        label_image = label(filled_img)
-        print(label_image.shape)
-        props = regionprops_table(label_image,
-                                    properties=['area', # Num of pixels in region
-                                                'convex_area', # Num pixels in smallest convex polygon that encloses region
-                                                'eccentricity', # Eccentricity of the ellipse that has the same second-moments as the region
-                                                'equivalent_diameter', # Diameter of circle with same area as region
-                                                'major_axis_length', # Length of major axis
-                                                'minor_axis_length', # Length of minor axis
-                                                'perimeter'])
-        print(props)
+        try:
+            full_path = img_dir + file
+            filled_img, original = p.go(full_path)
+            label_image = label(filled_img)
+            props = regionprops_table(label_image,
+                                        properties=['area', # Num of pixels in region
+                                                    'convex_area', # Num pixels in smallest convex polygon that encloses region
+                                                    'eccentricity', # Eccentricity of the ellipse that has the same second-moments as the region
+                                                    'equivalent_diameter', # Diameter of circle with same area as region
+                                                    'major_axis_length', # Length of major axis
+                                                    'minor_axis_length', # Length of minor axis
+                                                    'perimeter'])
 
-        # manual feature generation from create_features
-        manual_features = cf.make_all_features(original, filled_img)
-        for f in manual_features.keys():
-            props[f] = manual_features[f]
+            # manual feature generation from create_features
+            manual_features = cf.make_all_features(original, filled_img)
+            for f in manual_features.keys():
+                props[f] = manual_features[f]
 
-        # print(props)
-
-        for key in props: 
-            props[key] = float(props[key]) 
-        # include id
-        props['id'] = original.PatientID
-
-        df = df.append(props, ignore_index=True)
+            for key in props: 
+                props[key] = float(props[key]) 
+            # include id
+            props['id'] = original.PatientID
+            df = df.append(props, ignore_index=True)
     
-    # except Exception as e:
-        # print('Could not process: ', file)
-        # print(e)
+        except Exception as e:
+            print('Could not process: ', file)
+            print(e)
 
-    '''
+    
     # Optional: standardize numeric columns
-    df[['area', 'convex_area', 'eccentricity', 'equivalent_diameter',\
-        'major_axis_length', 'minor_axis_length', 'orientation', 'perimeter']] =\
-        minmax_scale(df[['area', 'convex_area', 'eccentricity', 'equivalent_diameter',\
-        'major_axis_length', 'minor_axis_length', 'orientation', 'perimeter']])
-    '''
+    # features = ['area', 'convex_area', 'eccentricity', 'equivalent_diameter',\
+    #            'major_axis_length', 'minor_axis_length', 'perimeter',\
+    #            'spiculationA', 'spiculationB', 'spiculationC', 'spiculationD',\
+    #            'spiculationRA', 'spiculationRB', 'spiculationRC', 'spiculationRD',\
+    #            'circularity', 'iou', 'hough', 'snake', 'gabor']
+
     full_data = df.join(labels.set_index('id'), on='id')
+    # full_data[features] = minmax_scale(full_data[features])
     
+
     # Change benign without callback to benign
     full_data.loc[full_data['pathology'] == 'BENIGN_WITHOUT_CALLBACK', 'pathology'] = 'BENIGN'
     full_data.loc[full_data['pathology'] == 'BENIGN', 'pathology'] = 0

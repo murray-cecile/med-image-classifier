@@ -11,9 +11,11 @@ from skimage import exposure, img_as_float
 from skimage.segmentation import (morphological_chan_vese,
                                   checkerboard_level_set)
 from skimage.filters import threshold_otsu
+from skimage.filters import threshold_mean
 from skimage.morphology import opening
 from skimage.measure import label
 from sklearn.utils.testing import ignore_warnings
+
 
 # DELETE THIS LATER 
 from skimage.measure import label, regionprops, regionprops_table
@@ -33,7 +35,8 @@ def threshold_img(img, pctile=50):
     img_scaled = exposure.rescale_intensity(img, in_range=(p_thresh, p100))
 
     # thresholding
-    img_thresh = threshold_otsu(img_scaled)
+    # img_thresh = threshold_otsu(img_scaled)
+    img_thresh = threshold_mean(img_scaled)
 
     # Figure out what background is, make sure it's 0
     original = img_scaled > img_thresh
@@ -72,7 +75,7 @@ def apply_ACWE(img):
     return l
 
 
-def check_segmentation(a):
+def check_segmentation(binary, segment):
     '''
     Confirm lesion is labeled with 1's by segmentation by checking 
         % of edge pixels that are 1 and reversing 0/1's if > 50%
@@ -80,18 +83,18 @@ def check_segmentation(a):
     Returns: segmented image array with "correct" 0/1 assignment
     '''
 
-    x, y = a.shape
+    x, y = binary.shape
 
-    t = a[0,:].sum()
-    l = a[:,0].sum()
-    r = a[:,y-1].sum()
-    b = a[x-1,:].sum()
+    t = segment[3,:].sum()
+    l = segment[:,3].sum()
+    r = segment[:,y-4].sum()
+    b = segment[x-4,:].sum()
     perimeter = 2 * (x + y)
 
-    if (t + l + r + b) / perimeter > 0.5:
-        return np.where(a == 0, 1, 0)
+    if ((t + l + r + b) / perimeter) > 0.5:
+        return (1-segment)
     else:
-        return a
+        return segment
 
 
 # label image regions
@@ -125,11 +128,11 @@ def go(file):
     original = pydicom.dcmread(file, force=True)
     binary = threshold_img(original.pixel_array, pctile=50)
     segment = apply_ACWE(binary)
-    main_region = define_region(segment)
+    confirmed_filled = check_segmentation(binary, segment)
+    main_region = define_region(confirmed_filled)
     filled = fill_holes(main_region)
-    confirmed_filled = check_segmentation(filled)
-
-    return confirmed_filled, original
+    
+    return filled, original
 
 
 if __name__ == "__main__":
