@@ -5,6 +5,7 @@ import numpy as np
 import os, argparse 
 import pydicom, cv2
 import scipy
+from statistics import mode
 import matplotlib.pyplot as plt
 from skimage import exposure, img_as_float
 from skimage.segmentation import (morphological_chan_vese,
@@ -30,8 +31,11 @@ def threshold_img(img, pctile=50):
     # thresholding
     img_thresh = threshold_otsu(img_scaled)
 
-    # binarize
-    return img_scaled > img_thresh
+    # Figure out what background is, make sure it's 0
+    original = img_scaled > img_thresh
+    original = img_as_float(original)
+
+    return original
 
 
 def store_evolution_in(lst):
@@ -50,17 +54,17 @@ def apply_ACWE(img):
     '''
     Segments largest region using ACWE.
     '''
-    image = img_as_float(img)
-    init_ls = checkerboard_level_set(image.shape, 6)
+    init_ls = checkerboard_level_set(img.shape, 6)
     evolution = []
     callback = store_evolution_in(evolution)
-    ls = morphological_chan_vese(image, 3, init_level_set=init_ls,
-                                 smoothing=1, iter_callback=callback)
+    l = morphological_chan_vese(img, 3, init_level_set=init_ls,
+                                smoothing=1, iter_callback=callback)
+    
     #plt.figure(figsize=(9, 3))
     #plt.imshow(ls, cmap="gray")
     #plt.contour(evolution[3], [0.5], colors='y')
 
-    return (1 - ls)
+    return l
 
 
 # label image regions
@@ -68,10 +72,13 @@ def define_region(img):
     '''
     Keeps the largest region only.
     '''
+    # Figure out what the background is
+    # Whatever the majority of the four corners is = background
     labels = label(img)
-    largestCC = labels == np.argmax(np.bincount(labels.flat, weights=img.flat))
+    largestCC = labels == np.argmax(np.bincount(labels.flat,
+                                                weights=img.flat))
     main = (1 * largestCC)
-    
+
     return main
 
 
@@ -88,14 +95,13 @@ def go(file):
     '''
     Run all functions.
     '''
-    original = pydicom.dcmread(file)
+    original = pydicom.dcmread(file, force=True)
     binary = threshold_img(original.pixel_array, pctile=50)
     segment = apply_ACWE(binary)
     main_region = define_region(segment)
     filled = fill_holes(main_region)
 
     return filled, original
-
 
 
 if __name__ == "__main__":

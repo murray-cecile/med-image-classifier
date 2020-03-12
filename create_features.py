@@ -190,14 +190,54 @@ def compute_spiculation(orig, segmented_mask):
     return {'A': std_dev_A, 'B': std_dev_B, 'C': std_dev_C, 'D': std_dev_D}
  
 
-def compute_circularity():
+def circular_mask(matrix, center, radius):
     '''
+    Given an image, a center point, and a diameter, returns a copy of the
+    original image only displaying the values within a circle centered at
+    "center" with radius equal to (diameter - 1) / 2.
+
+    Input:
+        matrix (numpy array): a numpy array of the original image
+        center (lst): row and column of the center pixel to evaluate
+        diameter (int): odd integer value
+
+    Return:
+        matrix_copy (numpy array): a copy of the original image with a
+                                   circular mask applied
     '''
-    # Segment
+    # Create a mask given center pixel and diameter
+    h = matrix.shape[0]
+    w = matrix.shape[1]
+    radius = int(radius)
+    y, x = np.ogrid[:h, :w]
+    dist_from_center = np.sqrt((x - center[0]) ** 2 + (y - center[1]) ** 2)
+    mask = dist_from_center <= radius
+    empty_image = np.zeros((matrix.shape[0], matrix.shape[1]))
+    matrix_copy = matrix.copy()
+    matrix_copy[~mask] = 2
+
+    return matrix_copy
+
+
+def compute_circularity(filled):
+    '''
+    Computes circularity given an image with one region.
+    '''
+    label_image = label(filled)
+    regions = regionprops(label_image)
     # Find center of mass
+    y0, x0 = regions[0].centroid
     # Find area of segment
-    # Create circule that has same area
-    # Percent overlap of region with equivalent area circle
+    area = regions[0].area
+    # Create circle with this area
+    radius = np.sqrt(area / np.pi)
+    masked_image = circular_mask(filled, [x0, y0], radius) # Visualize this
+    # Calculate circularity
+    overlap = np.count_nonzero(masked_image == 1)
+    rest_of_circle = np.count_nonzero(masked_image == 0)
+    circularity = overlap / (overlap + rest_of_circle)
+
+    return circularity
 
 
 def make_all_features(original, filled):
@@ -214,15 +254,17 @@ def make_all_features(original, filled):
     p_thresh, p100 = np.percentile(orig, (50, 100))
     img_scaled = exposure.rescale_intensity(orig, in_range=(p_thresh, p100))
     spiculation_rescaled = compute_spiculation(img_scaled, filled)
+    circularity = compute_circularity(filled)
 
     mf = {'spiculationA': spiculation['A'], \
-        'spiculationB': spiculation['B'], \
-        'spiculationC': spiculation['C'], \
-        'spiculationD': spiculation['D'], \
-        'spiculationRA': spiculation_rescaled['B'], \
-        'spiculationRB': spiculation_rescaled['B'], \
-        'spiculationRC': spiculation_rescaled['C'], \
-        'spiculationRD': spiculation_rescaled['D']}
+         'spiculationB': spiculation['B'], \
+         'spiculationC': spiculation['C'], \
+         'spiculationD': spiculation['D'], \
+         'spiculationRA': spiculation_rescaled['B'], \
+         'spiculationRB': spiculation_rescaled['B'], \
+         'spiculationRC': spiculation_rescaled['C'], \
+         'spiculationRD': spiculation_rescaled['D'],
+         'circularity': circularity}
     
     return mf
 
